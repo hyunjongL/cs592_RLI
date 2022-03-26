@@ -4,7 +4,7 @@
 ## Pre-requites for this tutorial
 Please, install Ubuntu 20.04 and [ROS Noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) with dependencies:
 ~~~~bash
-sudo apt-get install gazebo9 ros-noetic-qt-build ros-noetic-driver-common ros-noetic-gazebo-ros-control ros-noetic-gazebo-ros-pkgs ros-noetic-ros-control ros-noetic-control-toolbox ros-noetic-realtime-tools ros-noetic-ros-controllers ros-noetic-xacro python-wstool -y
+sudo apt-get install ros-noetic-driver-common ros-noetic-gazebo-ros-control ros-noetic-gazebo-ros-pkgs ros-noetic-ros-control ros-noetic-control-toolbox ros-noetic-realtime-tools ros-noetic-ros-controllers ros-noetic-xacro -y
 sudo pip3 install beizer bezier
 ~~~~
 
