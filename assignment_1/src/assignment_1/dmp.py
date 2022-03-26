@@ -1,27 +1,30 @@
 import numpy as np
 import matplotlib.pylab as plt
 
-
 class OriginalFormulation(object):
 
     def __init__(self, K=50., D=None):
         self.K = K
         if D is None: 
-            D = 2.0 * np.sqrt(self.K)    
+            D = 2.0 * np.sqrt(self.K)
         self.D = D
             
     def acceleration(self, x, dx, start, goal, tau, f, s):
         #------------------------------------------------------------
-        # Place your code here
-        
-        return 
+        # Place your code here 
+        # n_samples, dims, n_steps = x, dx, ddx .shape
+
+        return (self.K * (goal - x) - self.D * tau * dx + (goal - start) * f) / tau
         #------------------------------------------------------------
   
     def fs(self, x, dx, ddx, start, goal, tau, s):
         #------------------------------------------------------------
         # Place your code here
-        
-        return 
+
+        # n_samples, dims, n_steps = x, dx, ddx .shape
+        # dims = start, goal .shape
+
+        return ((self.D * tau * dx + tau ** 2 * ddx - self.K * (goal[np.newaxis, :, np.newaxis]-x)) / (goal[np.newaxis, :, np.newaxis] - start[np.newaxis, :, np.newaxis])).squeeze()
         #------------------------------------------------------------
         
 class ImprovedFormulation(object):
@@ -35,15 +38,23 @@ class ImprovedFormulation(object):
     def acceleration(self, x, dx, start, goal, tau, f, s):
         #------------------------------------------------------------
         # Place your code here
-        
-        return 
+        K = self.K
+        D = self.D
+        g = goal #[np.newaxis, :, np.newaxis]
+        s = start
+        x = (K * (g - x) - D * tau * dx - K * (g - s) * s + K * f) / tau
+        return x
         #------------------------------------------------------------
     
     def fs(self, x, dx, ddx, start, goal, tau, s):        
         #------------------------------------------------------------
         # Place your code here
-        
-        return 
+        K = self.K
+        D = self.D
+        g = goal[np.newaxis, :, np.newaxis]
+        s = start[np.newaxis, :, np.newaxis]
+
+        return (((tau ** 2) * ddx + D * tau * dx) / K - (g - x) + (g - s) * s).squeeze()
         #------------------------------------------------------------
 
 
@@ -74,6 +85,7 @@ class DMPs_discrete(object):
             self.formulation = OriginalFormulation()
         else:
             self.formulation = ImprovedFormulation()
+        self.K = self.formulation.K
         
         return
 
@@ -148,57 +160,43 @@ class DMPs_discrete(object):
         # Place your code here
         
         # Calculate f
+        f_target = self.formulation.fs(y_des, yd_des, ydd_des, self.y0, self.goal, self.tau, x_track)
+        f_target = np.reshape(f_target, (n_samples, dims, n_steps, 1))
 
+        psi = self.gen_psi(x_track)
 
+        # Calculate weights  
+        _x_track = x_track[:, np.newaxis]
+        self.w = np.average(np.sum(_x_track * psi * f_target, axis=2), axis=0) \
+            / np.sum(_x_track * psi * _x_track, axis=0)
 
-        
-        # Calculate weights
-
-
-
-
-
-
-        
-        self.w =
-
-
-
-
-
-        
         #------------------------------------------------------------
 
         # set up tracking vectors
-        y_track   = np.zeros((self.dmps, n_steps)) 
-        yd_track  = np.zeros((self.dmps, n_steps)) 
-        ydd_track = np.zeros((self.dmps, n_steps)) 
+        y_track   = np.zeros((self.dmps, n_steps))
+        yd_track  = np.zeros((self.dmps, n_steps))
+        ydd_track = np.zeros((self.dmps, n_steps))
         
         y   = self.y0.copy()
-        yd  = np.zeros(self.dmps)   
-        ydd = np.zeros(self.dmps)  
-        
+        yd  = np.zeros(self.dmps)
+        ydd = np.zeros(self.dmps)
         #------------------------------------------------------------
         # Place your code here
-
-
-
-
-
+        f = np.sum(np.expand_dims(self.w, axis=-1) * psi.T[np.newaxis, :] * x_track, axis=1) / np.expand_dims(np.sum(psi, axis=1), axis=0)
+        
         
         # Recover the demonstration using the learned weights (for confirmation)
         for t in range(n_steps):
+            # Calcualte acceleration based on f(s)
+            # f_target = self.formulation.fs(y_des, yd_des, ydd_des, self.y0, self.goal, self.tau, x_track)
+            ydd = self.formulation.acceleration(y, yd, self.y0, self.goal, self.tau, f.T[t], x_track[t])
+            yd += ydd * self.dt
+            y += yd * self.dt
 
-                # Calcualte acceleration based on f(s)
-
-
-
-                
-                
             # record timestep
-            y_track[:,t]   = 
-            yd_track[:,t]  = 
-            ydd_track[:,t] = 
+            y_track[:,t]   = y
+            yd_track[:,t]  = yd
+            ydd_track[:,t] = ydd
         #------------------------------------------------------------
                 
         return y_track, yd_track, ydd_track
@@ -217,7 +215,7 @@ class DMPs_discrete(object):
         if y0 is None: y0 = self.y0
         if goal is None: goal = self.goal
         n_steps = int(self.n_steps/self.tau)
-        
+        print(y0, goal)
         # set up tracking vectors
         y_track   = np.zeros((self.dmps, n_steps)) 
         yd_track  = np.zeros((self.dmps, n_steps)) 
@@ -226,24 +224,29 @@ class DMPs_discrete(object):
 
         #------------------------------------------------------------
         # Place your code here
-        y   = 
-        yd  = 
-        ydd = 
+        y   = self.y0.copy()
+        yd  = np.zeros(self.dmps)
+        ydd = np.zeros(self.dmps)
         
+        psi = self.gen_psi(x_track)
+        f = np.sum(np.expand_dims(self.w, axis=-1) * psi.T[np.newaxis, :] * x_track, axis=1) / np.expand_dims(np.sum(psi, axis=1), axis=0)
+
+        # f = np.sum(self.w * psi * np.expand_dims(x_track, axis=-1), axis=-1) / np.expand_dims(np.sum(psi, axis=1), axis=0)
+
+        # f = np.sum(self.w[np.newaxis, :] * psi * x_track[:, np.newaxis], axis=1) / np.sum(psi, axis=1)
+
         for t in range(n_steps):
+            # Calcualte acceleration based on f(s)
+            ydd = self.formulation.acceleration(y, yd, self.y0, goal, self.tau, f.T[t], x_track[t])
+            yd += ydd * self.dt
+            y += yd * self.dt
 
-                # Calcualte acceleration based on f(s)
+            # record timestep
+            y_track[:,t]   = y
+            yd_track[:,t]  = yd
+            ydd_track[:,t] = ydd
 
-
-
-
-
-                
-
-            y_track[:,t]   = 
-            yd_track[:,t]  = 
-            ydd_track[:,t] = 
-        #------------------------------------------------------------
+            #------------------------------------------------------------
             
         return y_track, yd_track, ydd_track
 
@@ -259,7 +262,8 @@ class DMPs_discrete(object):
             plt.plot(trajs_gen[i,axis_num,:],'g-', label='Tg')
 
         plt.legend()
-        plt.show()
+        plt.savefig('traj.png')
+        # plt.show()
         
     def plot_basis(self):
         """Plot basis functions """
@@ -271,7 +275,8 @@ class DMPs_discrete(object):
             psi = self.gen_psi(x)
             plt.plot(x, psi)
 
-        plt.show()
+        plt.savefig('basis.png')
+        # plt.show()
 
     def plot_f(self, f, f_des=None):
         """Plot nonlinear functions """
@@ -280,7 +285,9 @@ class DMPs_discrete(object):
         plt.plot(f)
         if f_des is not None:
             plt.plot(f_des, '--')
-        plt.show()
+        
+        plt.savefig('f.png')
+        # plt.show()
 
     def plot_canonical_sys(self):
         """Plot the phase change in the canonical system """
@@ -288,7 +295,8 @@ class DMPs_discrete(object):
         
         fig = plt.figure()
         plt.plot(x)
-        plt.show()
+        plt.savefig('canonical_sys.png')
+        # plt.show()
 
 
 

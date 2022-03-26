@@ -122,8 +122,8 @@ def plot_traj(trajs, trajs_demo=None):
 
         if trajs_demo is not None:
             plt.plot(trajs_demo[0][i], 'r-', label=str(i))
-    
-    plt.show()
+    plt.savefig('plot2d.png')
+    # plt.show()
 
 
 def problem_3a1(enable_plot=True):
@@ -158,7 +158,11 @@ def problem_3a2(limb='right'):
     #r_traj_data = extract_data()
     r_traj_data = problem_3a1(enable_plot=False)
     # print (jtc.get_joint_names(limb))
-
+    # ['right_s0', 'right_s1', 'right_e0', 'right_e1', 'right_w0', 'right_w1', 'right_w2']
+    print(r_traj_data.shape)
+    import pykdl_utils
+    fk_request(pykdl_utils, r_traj_data)
+    exit()
 
     # Command Current Joint Positions first
     points = []
@@ -174,7 +178,6 @@ def problem_3a2(limb='right'):
     point.velocities = [0]*7
     point.time_from_start = rospy.Duration.from_sec(4.0)
     points.append(point)
-    
     print("Waiting at the initial posture")
     jtc.move(limb, points)
     
@@ -186,8 +189,8 @@ def problem_3a2(limb='right'):
 
 
 
-
-        #points.append(point)
+        # print()
+        points.append(point)
 
 
         
@@ -225,8 +228,8 @@ def problem_3bc(limb='right', goal=None):
 
 
     
-    pose_list = 
-    traj_demo = 
+    pose_list = 0
+    traj_demo = 0
     #------------------------------------------------------------
 
     # Learn via DMP original/improved

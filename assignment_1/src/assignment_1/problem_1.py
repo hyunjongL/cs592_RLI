@@ -66,7 +66,7 @@ def problem_1b():
     trajs_demo = min_jerk_trajs(dims=dims, n_samples=n_samples)
 
     # Learn via DMP original/improved
-    dmp = DMPs_discrete(dims=dims, bfs=bfs, tau=tau)
+    dmp = DMPs_discrete(dims=dims, bfs=bfs, tau=tau, enable_improved=True)
     dmp.learn(trajs_demo)
 
     # ReProduce a trajectory
@@ -76,11 +76,9 @@ def problem_1b():
     #------------------------------------------------------------
     # Place your code here
     for i in range(10):
-
-
-        trajs
+        traj, _, _ = dmp.plan(y0, i+1)
+        trajs.append(traj)
     #------------------------------------------------------------
-
     # Reproduction w/ visualization
     dmp.plot_traj(trajs_demo, np.array(trajs))
 
@@ -121,9 +119,9 @@ def problem_1d():
     
     # Data generation
     trajs_demo = min_jerk_trajs(dims=dims, n_samples=n_samples, add_noise=True)
-
+    print(trajs_demo.shape)
     # Learn via DMP original/improved
-    dmp = DMPs_discrete(dims=dims, bfs=bfs, tau=tau)
+    dmp = DMPs_discrete(dims=dims, bfs=bfs, tau=tau, enable_improved=True)
     dmp.learn(trajs_demo)
 
     # ReProduce a trajectory
@@ -134,18 +132,67 @@ def problem_1d():
     # Place your code here
     for i in range(10):
 
-
-        trajs
+        traj, _, _ = dmp.plan(y0, (0.8+0.04*i, 0.8+0.04*i))
+        trajs.append(traj)
     #------------------------------------------------------------
-
     # Reproduction w/ visualization
     dmp.plot_traj(trajs_demo, np.array(trajs))
+    plot_2d(traj, trajs_demo)
+
+    
     
 
+def problem_1e():
+    # Bonus - handwriting
+    n_samples = 1000
+    dims      = 2
+    bfs       = 120
+    tau       = 1.
+    
+    # Data generation
+    import lasa_utils
+    DataSet = lasa_utils._PyLasaDataSet()
+    dataset = DataSet.Trapezoid
+    # dataset 종류: 
+    # # ['Angle', 'GShape', 'Khamesh', 'LShape', 'Multi_Models_4', 
+    # 'Saeghe', 'Spoon', 'WShape', 'BendedLine', 'heee', 'Leaf_1', 
+    # 'Multi_Models_1', 'NShape', 'Sharpc', 'Sshape', 'Zshape', 
+    # 'CShape', 'JShape_2', 'Leaf_2', 'Multi_Models_2', 'PShape', 
+    # 'Sine', 'Trapezoid', 'DoubleBendedLine', 'JShape', 'Line', 
+    # 'Multi_Models_3', 'RShape', 'Snake', 'Worm']
+    # demos = np.array(dataset_angle.demos)
+    print(dataset.demos[0].pos.shape, tau)
+    trajs_demo = np.array([dataset.demos[i].pos for i in range(7)])
+    print(trajs_demo[0][0][0], trajs_demo[0][0][-1])
+    print(trajs_demo.shape)
+    
+    # Learn via DMP original/improved
+    dmp = DMPs_discrete(dims=dims, bfs=bfs, dt=dataset.dt, tau=tau, enable_improved=False)
+    dmp.learn(trajs_demo)
+
+    # ReProduce a trajectory
+    y0 = None
+
+    traj, _, _ = dmp.plan(None, None)
+    #------------------------------------------------------------
+    # Reproduction w/ visualization
+    plot_2d(traj, trajs_demo)
+
+    # dmp.plot_traj(trajs_demo, np.array(trajs))
 
     
-    
 
+def plot_2d(traj, trajs_demo):
+    # Reproduction w/ visualization
+    n_samples, _, _ = trajs_demo.shape
+    fig = plt.figure()
+    plt.title('Trajectory (X) - Demo (Td) and generated (Tg)')
+    for i in range(n_samples):
+        plt.plot(trajs_demo[i,0], trajs_demo[i,1], 'r--', label='Td')
+    plt.plot(traj[0], traj[1], 'g-', label='Tg')
+    plt.legend()
+    plt.savefig('plot2d.png')
+    # plt.show()        
 
 
 if __name__ == "__main__":
@@ -173,6 +220,10 @@ if __name__ == "__main__":
         # Adapt the DMP to other goals    
         print("Problem 1D")
         problem_1d()
+    elif opt.subproblem == 'e':
+        # Adapt the DMP to other goals    
+        print("Problem 1E")
+        problem_1e()
     else:
         print("Error! Please specify the sub problem!")
 

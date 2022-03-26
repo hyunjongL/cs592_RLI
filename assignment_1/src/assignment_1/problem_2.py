@@ -30,7 +30,8 @@ def plot_2d(traj, trajs_demo):
     plt.plot(trajs_demo[0,0], trajs_demo[0,1], 'r--', label='Td')
     plt.plot(traj[0], traj[1], 'g-', label='Tg')
     plt.legend()
-    plt.show()        
+    plt.savefig('plot2d.png')
+    # plt.show()        
     
 
 def problem_2a1():
@@ -55,12 +56,13 @@ def problem_2a1():
     dmp = DMPs_discrete(dims=dims, bfs=bfs, tau=tau, dt=dt,
                             enable_improved=False)
     traj, _, _ = dmp.learn(trajs_demo)
-
+    
     # ReProduce a trajectory
     y0   = None
     goal = None
     
     traj, _, _ = dmp.plan(y0=y0, goal=goal)
+    
     plot_2d(traj, trajs_demo)
 
 
@@ -115,14 +117,15 @@ def problem_2b():
 
     # Learn via DMP original/improved
     dmp = DMPs_discrete(dims=dims, bfs=bfs, tau=tau, dt=dt,
-                            enable_improved=False)
+                            enable_improved=True)
     traj, _, _ = dmp.learn(trajs_demo)
 
     #------------------------------------------------------------
     # Place your code here
     # ReProduce a trajectory
-    y0   = 
-    goal = 
+    y0   = [0, 0]
+    goal = [0.01,  0]
+    # y0 = (0, 0), goal = (0.01, 0) 일 때, improved 가 훨씬 잘됨.
     #------------------------------------------------------------
     
     traj, _, _ = dmp.plan(y0=y0, goal=goal)
