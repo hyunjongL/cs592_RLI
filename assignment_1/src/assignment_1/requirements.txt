@@ -2,3 +2,5 @@ numpy
 matplotlib
 pyyaml
 rospkg
+defusedxml
+netifaces
