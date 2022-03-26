@@ -29,7 +29,7 @@ catkin_init_workspace
 
 Let's clone the the class repo!
 ~~~~bash
-git clone git@github.com:pidipidi/cs592_RLI.git
+git clone git@github.com:hyunjongL/cs592_RLI.git
 ~~~~
 
 To simulate a Baxter robot using a Gazebo simulator, you have to install the simulation-related packages,
