@@ -57,7 +57,7 @@ cp ./src/cs592_RLI/baxter.sh ./
 
 You can verify your ROS install by confirming the environmental variables
 ~~~~bash
-env| grep ROS
+env | grep ROS
 ~~~~
 
 Make sure that if ROS_MASTER_URI and ROS_ROOT, ETC are properly setup. 
