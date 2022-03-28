@@ -5,8 +5,6 @@ step2: https://github.com/orocos/orocos_kinematics_dynamics/issues/115
 
 (at any working directory, (I used home (~/)))
 git clone git@github.com:orocos/orocos_kinematics_dynamics
-cd orocos_kinematics_dynamics/python_orocos_kdl
-git submodule update --init
 
 cd orocos_kinematics_dynamics/orocos_kdl
 mkdir build && cd build
@@ -17,6 +15,7 @@ make -j4
 sudo make install
 
 cd ~/orocos_kinematics_dynamics/python_orocos_kdl
+git submodule update --init
 mkdir build && cd build
 ccmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_VERSION=3 ..
 (in the GUI, (c)onfigure and (g)enerate, without manual configuration)

@@ -13,8 +13,13 @@ class OriginalFormulation(object):
         #------------------------------------------------------------
         # Place your code here 
         # n_samples, dims, n_steps = x, dx, ddx .shape
+        K = self.K
+        g = goal
+        x0 = start
+        D = self.D
 
-        return (self.K * (goal - x) - self.D * tau * dx + (goal - start) * f) / tau
+
+        return (K * (g - x) - D * tau * dx + (g - x0) * f) / tau
         #------------------------------------------------------------
   
     def fs(self, x, dx, ddx, start, goal, tau, s):
@@ -23,8 +28,12 @@ class OriginalFormulation(object):
 
         # n_samples, dims, n_steps = x, dx, ddx .shape
         # dims = start, goal .shape
+        K = self.K
+        g = goal[np.newaxis, :, np.newaxis]
+        x0 = start[np.newaxis, :, np.newaxis]
+        D = self.D
 
-        return ((self.D * tau * dx + tau ** 2 * ddx - self.K * (goal[np.newaxis, :, np.newaxis]-x)) / (goal[np.newaxis, :, np.newaxis] - start[np.newaxis, :, np.newaxis])).squeeze()
+        return ((D * tau * dx + tau ** 2 * ddx - K * (g - x)) / (g - x0)).squeeze()
         #------------------------------------------------------------
         
 class ImprovedFormulation(object):
@@ -41,9 +50,9 @@ class ImprovedFormulation(object):
         K = self.K
         D = self.D
         g = goal #[np.newaxis, :, np.newaxis]
-        s = start
-        x = (K * (g - x) - D * tau * dx - K * (g - s) * s + K * f) / tau
-        return x
+        x0 = start
+        a = (K * (g - x) - D * tau * dx - K * (g - x0) * s + K * f) / tau
+        return a
         #------------------------------------------------------------
     
     def fs(self, x, dx, ddx, start, goal, tau, s):        
@@ -52,9 +61,9 @@ class ImprovedFormulation(object):
         K = self.K
         D = self.D
         g = goal[np.newaxis, :, np.newaxis]
-        s = start[np.newaxis, :, np.newaxis]
+        x0 = start[np.newaxis, :, np.newaxis]
 
-        return (((tau ** 2) * ddx + D * tau * dx) / K - (g - x) + (g - s) * s).squeeze()
+        return (((tau ** 2) * ddx + D * tau * dx) / K - (g - x) + (g - x0) * s).squeeze()
         #------------------------------------------------------------
 
 
