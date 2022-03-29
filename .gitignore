@@ -1,3 +1,8 @@
+# video files
+assignment_1/report_src/cut_videos/*
+assignment_1/report_src/full_videos/*
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
