@@ -10,7 +10,7 @@ cd orocos_kinematics_dynamics/orocos_kdl
 mkdir build && cd build
 (sudo apt install cmake-curses-gui)
 ccmake -DCMAKE_BUILD_TYPE=Release ..
-(in the GUI, (c)onfigure and (g)enerate, without manual configuration)
+(in the GUI, (c)onfigure, (c)onfigure, and (g)enerate, without manual configuration)
 make -j4
 sudo make install
 
@@ -18,8 +18,8 @@ cd ~/orocos_kinematics_dynamics/python_orocos_kdl
 git submodule update --init
 mkdir build && cd build
 ccmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_VERSION=3 ..
-(in the GUI, (c)onfigure and (g)enerate, without manual configuration)
+(in the GUI, (c)onfigure, (c)onfigure, and (g)enerate, without manual configuration)
 make -j4
-(ls to check if PyKDL.so is generated)
+(ls to check if PyKDL.so is generated. It may be located in devel/lib/python3/dist-packages/PyKDL.so)
 
 cp PyKDL.so DESTINATION_VENV/lib/python3.8/site-packages
