@@ -13,7 +13,7 @@ class Node:
         self.prev_idx = prev_idx # previous node's index
 
     def __str__(self):
-        return str(self.x) + "," + str(self.cost) + "," + str(self.prev_idx)
+        return str(self.pos) + "," + str(self.cost) + "," + str(self.prev_idx)
 
 
 def get_grid_index(state, resolution, grid_limits, grid_dim):
@@ -83,7 +83,18 @@ def is_valid(state, grid_limits, obstacle_tree, robot_size):
     if count>0: return False
     return True
     
-    
+def out_of_map(candidate_pos, grid_limits):
+    min_limit = np.any((candidate_pos < grid_limits[0]) == True)
+    max_limit = np.any((candidate_pos > grid_limits[1]) == True)
+    return min_limit or max_limit
+
+def collides(candidate_pos, obstacle_tree):
+    return obstacle_tree.query(candidate_pos.reshape(1, -1))[0] == 0
+
+def cost_function(action):
+    return 1
+    return np.sqrt(np.sum(action**2))
+
 def dijkstra_planning(start, goal, actions, resolution, grid_limits,
                           obstacle_tree, robot_size, **kwargs):
     """ 
@@ -143,38 +154,65 @@ def dijkstra_planning(start, goal, actions, resolution, grid_limits,
         cur_idx  = min(openset, key=lambda o: openset[o].cost)
         cur_node = openset[cur_idx]
 
+
         #------------------------------------------------------------
         # ADD YOUR CODE
         #------------------------------------------------------------
         # Break if reach to the goal
-        #if cur_idx == goal_node.idx :
-            # ...
+        if cur_idx == goal_node.idx :
+            closedset[cur_idx] = cur_node
+            break
 
         
         # Remove the item from the open set
-        #del openset[cur_idx]
-        # Add it to the closed set
+        del openset[cur_idx]
 
+        # Add it to the closed set
+        closedset[cur_idx] = cur_node
 
         # expand nodes based on available actions
-        #for i, action in enumerate(actions):
-            # ...
+        for i, action in enumerate(actions):
+            candidate_pos = cur_node.pos + action
+
+            if out_of_map(candidate_pos, grid_limits) or collides(candidate_pos, obstacle_tree):
+                # Actions that go out of the map or collide should not be considered
+                continue
+
+            candidate_cost = cur_node.cost + cost_function(action)
+            candidateNode = Node(candidate_pos,
+                      get_grid_index(candidate_pos, resolution, grid_limits, grid_dim),
+                      candidate_cost, cur_idx)
+            
+            if candidateNode.idx in closedset: # Closed Node
+                continue
+            elif candidateNode.idx in openset:
+                # An open node should be compare the cost 
+                if openset[candidateNode.idx].cost > candidate_cost:
+                    openset[candidateNode.idx] = candidateNode
+                else:
+                    continue
+            else:
+                # Not yet opened node should be opened
+                openset[candidateNode.idx] = candidateNode
             
             # Otherwise if it is already in the open set
             # ...
             
         #------------------------------------------------------------
-
+    
+    goal_node = closedset[goal_node.idx]
     # Track the path from goal to start
-    path = [goal_node.pos]    
+    path = [goal_node.pos]
     #------------------------------------------------------------
     # ADD YOUR CODE
     #------------------------------------------------------------
-    #prev_idx = goal_node.prev_idx
-    #while prev_idx != start_node.idx:
-        # ...
+    prev_idx = goal_node.prev_idx
+    while prev_idx != start_node.idx:
+        cur_node = closedset[prev_idx]
+        path.append(cur_node.pos)
+        prev_idx = cur_node.prev_idx
     
-    #path.append(start_node.pos)
+    path.append(start_node.pos)
     #------------------------------------------------------------
 
     return path[::-1]
