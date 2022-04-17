@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import math
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -53,9 +54,20 @@ class Qlearning:
         # -----------------------------------------------------------
         action = None
         if np.random.uniform(0, 1) < epsilon:
-            action = 
+            # exploration
+            rand_index = random.randint(0, self.action_dim - 1)
+            action = rand_index # self.actions[rand_index]
         else:
-            action = 
+            # exploitation
+            current_grid = self.get_grid_index(state)
+            best = None
+            best_action_idx = None
+            for action_idx in range(self.action_dim):
+                # new_pos = (state + action)
+                if best is None or best < self.Q[current_grid, action_idx]:
+                    best_action_idx = action_idx
+                    best = self.Q[current_grid, action_idx]
+            action = best_action_idx # self.actions[best_action_idx]
         # -----------------------------------------------------------
         return action
 
@@ -75,9 +87,11 @@ class Qlearning:
         #------------------------------------------------------------
         # Place your code here
         # -----------------------------------------------------------
-        predict = 
-        target = 
-        self.Q[] = 
+        current_grid = self.get_grid_index(state)
+        next_grid = self.get_grid_index(state2)
+        # predict = 
+        # target = 
+        self.Q[current_grid, action] = self.Q[current_grid, action] + self.alpha * (reward + self.gamma * self.Q[next_grid, action2] - self.Q[current_grid, action])
         # -----------------------------------------------------------
 
         
@@ -88,9 +102,9 @@ class Qlearning:
         state1 = self.env.reset() 
 
         while t < self.total_steps:
-            action1 = self.choose_action(state1)
-            state2, reward, done, info = self.env.step(self.actions[action1])
-            action2 = self.choose_action(state2, epsilon=0.)
+            action1 = self.choose_action(state1) # Exploration or exploitation
+            state2, reward, done, info = self.env.step(self.actions[action1]) 
+            action2 = self.choose_action(state2, epsilon=0.) # select the current best action 
 
             self.update(state1, state2, reward, action1, action2)
 
