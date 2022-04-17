@@ -56,18 +56,19 @@ class Qlearning:
         if np.random.uniform(0, 1) < epsilon:
             # exploration
             rand_index = random.randint(0, self.action_dim - 1)
-            action = rand_index # self.actions[rand_index]
+            action = rand_index
         else:
             # exploitation
             current_grid = self.get_grid_index(state)
+            
             best = None
             best_action_idx = None
+
             for action_idx in range(self.action_dim):
-                # new_pos = (state + action)
                 if best is None or best < self.Q[current_grid, action_idx]:
                     best_action_idx = action_idx
                     best = self.Q[current_grid, action_idx]
-            action = best_action_idx # self.actions[best_action_idx]
+            action = best_action_idx
         # -----------------------------------------------------------
         return action
 

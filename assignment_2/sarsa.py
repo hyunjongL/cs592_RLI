@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import math
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -53,9 +54,21 @@ class SARSA:
         # -----------------------------------------------------------
         action = None
         if np.random.uniform(0, 1) < epsilon:
-            action = 
+            # exploration
+            rand_index = random.randint(0, self.action_dim - 1)
+            action = rand_index
         else:
-            action = 
+            # exploitation
+            current_grid = self.get_grid_index(state)
+            
+            best = None
+            best_action_idx = None
+
+            for action_idx in range(self.action_dim):
+                if best is None or best < self.Q[current_grid, action_idx]:
+                    best_action_idx = action_idx
+                    best = self.Q[current_grid, action_idx]
+            action = best_action_idx
         # -----------------------------------------------------------
         return action
 
@@ -76,9 +89,9 @@ class SARSA:
         #------------------------------------------------------------
         # Place your code here
         # -----------------------------------------------------------
-        predict = 
-        target = 
-        self.Q[] = 
+        current_grid = self.get_grid_index(state)
+        next_grid = self.get_grid_index(state2)
+        self.Q[current_grid, action] = self.Q[current_grid, action] + self.alpha * (reward + self.gamma * (self.Q[next_grid, action2] - self.Q[current_grid, action]))
         # -----------------------------------------------------------
 
         
@@ -119,7 +132,7 @@ class SARSA:
 
                 state1 = self.env.reset()
                 action1 = self.choose_action(state1)
-                
+
 
 
     def test(self):
